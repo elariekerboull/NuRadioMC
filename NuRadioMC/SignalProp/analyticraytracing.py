@@ -15,6 +15,8 @@ from NuRadioMC.utilities import attenuation as attenuation_util
 from NuRadioReco.framework.parameters import electricFieldParameters as efp
 from NuRadioMC.SignalProp.propagation_base_class import ray_tracing_base
 from NuRadioMC.SignalProp.propagation import solution_types, solution_types_revert
+from numba import jit
+import matplotlib.pyplot as plt
 import logging
 logging.basicConfig()
 
@@ -23,7 +25,7 @@ cpp_available = False
 
 try:
     from NuRadioMC.SignalProp.CPPAnalyticRayTracing import wrapper
-    cpp_available = True
+    cpp_available = False
     print("using CPP version of ray tracer")
 except:
     print("trying to compile the CPP extension on-the-fly")
@@ -1122,6 +1124,100 @@ class ray_tracing_2D(ray_tracing_base):
             else:
                 return solution_types_revert['refracted']
 
+    @jit(nopython=True)
+    def python_find_solutions(self, x1, x2, plot=False, reflection=0, reflection_case=1):
+        tol = 1e-6
+        results = []
+        C0s = []  # intermediate storage of results
+
+        # calculate optimal start value. The objective function becomes infinity if the turning point is below the z
+        # position of the observer. We calculate the corresponding value so that the minimization starts at one edge
+        # of the objective function
+        # c = self.__b ** 2 / 4 - (0.5 * self.__b - np.exp(x2[1] / self.medium.z_0) * self.medium.n_ice) ** 2
+        # C_0_start = (1 / (self.medium.n_ice ** 2 - c)) ** 0.5
+        # R.L. March 15, 2019: This initial condition does not find a solution for e.g.:
+        # emitter  at [-400.0*units.m,-732.0*units.m], receiver at [0., -2.0*units.m]
+
+        if(self.__use_optimized_start_values):
+            # take surface skimming ray as start value
+            C_0_start, th_start = self.get_surf_skim_angle(x1)
+            logC_0_start = np.log(C_0_start - 1. / self.medium.n_ice)
+            self.__logger.debug(
+                'starting optimization with x0 = {:.2f} -> C0 = {:.3f}'.format(logC_0_start, C_0_start))
+        else:
+            logC_0_start = -1
+
+        result = optimize.root(self.obj_delta_y_square, x0=logC_0_start, args=(x1, x2, reflection, reflection_case), tol=tol)
+
+        if(plot):
+            fig, ax = plt.subplots(1, 1)
+        if(result.fun < 1e-7):
+            if(plot):
+                self.plot_result(x1, x2, self.get_C0_from_log(result.x[0]), ax)
+            if(np.round(result.x[0], 3) not in np.round(C0s, 3)):
+                C_0 = self.get_C0_from_log(result.x[0])
+                C0s.append(C_0)
+                solution_type = self.determine_solution_type(x1, x2, C_0)
+                self.__logger.info("found {} solution C0 = {:.2f}".format(solution_types[solution_type], C_0))
+                results.append({'type': solution_type,
+                                'C0': C_0,
+                                'C1': self.get_C_1(x1, C_0),
+                                'reflection': reflection,
+                                'reflection_case': reflection_case})
+
+        # check if another solution with higher logC0 exists
+        logC0_start = result.x[0] + 0.0001
+        logC0_stop = 100
+        delta_start = self.obj_delta_y(logC0_start, x1, x2, reflection, reflection_case)
+        delta_stop = self.obj_delta_y(logC0_stop, x1, x2, reflection, reflection_case)
+    #     print(logC0_start, logC0_stop, delta_start, delta_stop, np.sign(delta_start), np.sign(delta_stop))
+        if(np.sign(delta_start) != np.sign(delta_stop)):
+            self.__logger.info("solution with logC0 > {:.3f} exists".format(result.x[0]))
+            result2 = optimize.brentq(self.obj_delta_y, logC0_start, logC0_stop, args=(x1, x2, reflection, reflection_case))
+            if(plot):
+                self.plot_result(x1, x2, self.get_C0_from_log(result2), ax)
+            if(np.round(result2, 3) not in np.round(C0s, 3)):
+                C_0 = self.get_C0_from_log(result2)
+                C0s.append(C_0)
+                solution_type = self.determine_solution_type(x1, x2, C_0)
+                self.__logger.info("found {} solution C0 = {:.2f}".format(solution_types[solution_type], C_0))
+                results.append({'type': solution_type,
+                                'C0': C_0,
+                                'C1': self.get_C_1(x1, C_0),
+                                'reflection': reflection,
+                                'reflection_case': reflection_case})
+        else:
+            self.__logger.info("no solution with logC0 > {:.3f} exists".format(result.x[0]))
+
+        logC0_start = -100
+        logC0_stop = result.x[0] - 0.0001
+        delta_start = self.obj_delta_y(logC0_start, x1, x2, reflection, reflection_case)
+        delta_stop = self.obj_delta_y(logC0_stop, x1, x2, reflection, reflection_case)
+    #     print(logC0_start, logC0_stop, delta_start, delta_stop, np.sign(delta_start), np.sign(delta_stop))
+        if(np.sign(delta_start) != np.sign(delta_stop)):
+            self.__logger.info("solution with logC0 < {:.3f} exists".format(result.x[0]))
+            result3 = optimize.brentq(self.obj_delta_y, logC0_start, logC0_stop, args=(x1, x2, reflection, reflection_case))
+
+            if(plot):
+                self.plot_result(x1, x2, self.get_C0_from_log(result3), ax)
+            if(np.round(result3, 3) not in np.round(C0s, 3)):
+                C_0 = self.get_C0_from_log(result3)
+                C0s.append(C_0)
+                solution_type = self.determine_solution_type(x1, x2, C_0)
+                self.__logger.info("found {} solution C0 = {:.2f}".format(solution_types[solution_type], C_0))
+                results.append({'type': solution_type,
+                                'C0': C_0,
+                                'C1': self.get_C_1(x1, C_0),
+                                'reflection': reflection,
+                                'reflection_case': reflection_case})
+        else:
+            self.__logger.info("no solution with logC0 < {:.3f} exists".format(result.x[0]))
+
+        if(plot):
+            plt.show()
+
+        return sorted(results, key=itemgetter('reflection', 'C0'))
+
     def find_solutions(self, x1, x2, plot=False, reflection=0, reflection_case=1):
         """
         this function finds all ray tracing solutions
@@ -1142,7 +1238,6 @@ class ray_tracing_2D(ray_tracing_base):
         returns an array of the C_0 paramters of the solutions (the array might be empty)
 
         """
-
         if(reflection > 0 and self.medium.reflection is None):
             self.__logger.error("a solution for {:d} reflection(s) off the bottom reflective layer is requested, but ice model does not specify a reflective layer".format(reflection))
             raise AttributeError("a solution for {:d} reflection(s) off the bottom reflective layer is requested, but ice model does not specify a reflective layer".format(reflection))
@@ -1157,100 +1252,7 @@ class ray_tracing_2D(ray_tracing_base):
 #             print((time.time() -t)*1000.)
             return solutions
         else:
-
-            tol = 1e-6
-            results = []
-            C0s = []  # intermediate storage of results
-
-            # calculate optimal start value. The objective function becomes infinity if the turning point is below the z
-            # position of the observer. We calculate the corresponding value so that the minimization starts at one edge
-            # of the objective function
-            # c = self.__b ** 2 / 4 - (0.5 * self.__b - np.exp(x2[1] / self.medium.z_0) * self.medium.n_ice) ** 2
-            # C_0_start = (1 / (self.medium.n_ice ** 2 - c)) ** 0.5
-            # R.L. March 15, 2019: This initial condition does not find a solution for e.g.:
-            # emitter  at [-400.0*units.m,-732.0*units.m], receiver at [0., -2.0*units.m]
-
-            if(self.__use_optimized_start_values):
-                # take surface skimming ray as start value
-                C_0_start, th_start = self.get_surf_skim_angle(x1)
-                logC_0_start = np.log(C_0_start - 1. / self.medium.n_ice)
-                self.__logger.debug(
-                    'starting optimization with x0 = {:.2f} -> C0 = {:.3f}'.format(logC_0_start, C_0_start))
-            else:
-                logC_0_start = -1
-
-            result = optimize.root(self.obj_delta_y_square, x0=logC_0_start, args=(x1, x2, reflection, reflection_case), tol=tol)
-
-            if(plot):
-                import matplotlib.pyplot as plt
-                fig, ax = plt.subplots(1, 1)
-            if(result.fun < 1e-7):
-                if(plot):
-                    self.plot_result(x1, x2, self.get_C0_from_log(result.x[0]), ax)
-                if(np.round(result.x[0], 3) not in np.round(C0s, 3)):
-                    C_0 = self.get_C0_from_log(result.x[0])
-                    C0s.append(C_0)
-                    solution_type = self.determine_solution_type(x1, x2, C_0)
-                    self.__logger.info("found {} solution C0 = {:.2f}".format(solution_types[solution_type], C_0))
-                    results.append({'type': solution_type,
-                                    'C0': C_0,
-                                    'C1': self.get_C_1(x1, C_0),
-                                    'reflection': reflection,
-                                    'reflection_case': reflection_case})
-
-            # check if another solution with higher logC0 exists
-            logC0_start = result.x[0] + 0.0001
-            logC0_stop = 100
-            delta_start = self.obj_delta_y(logC0_start, x1, x2, reflection, reflection_case)
-            delta_stop = self.obj_delta_y(logC0_stop, x1, x2, reflection, reflection_case)
-        #     print(logC0_start, logC0_stop, delta_start, delta_stop, np.sign(delta_start), np.sign(delta_stop))
-            if(np.sign(delta_start) != np.sign(delta_stop)):
-                self.__logger.info("solution with logC0 > {:.3f} exists".format(result.x[0]))
-                result2 = optimize.brentq(self.obj_delta_y, logC0_start, logC0_stop, args=(x1, x2, reflection, reflection_case))
-                if(plot):
-                    self.plot_result(x1, x2, self.get_C0_from_log(result2), ax)
-                if(np.round(result2, 3) not in np.round(C0s, 3)):
-                    C_0 = self.get_C0_from_log(result2)
-                    C0s.append(C_0)
-                    solution_type = self.determine_solution_type(x1, x2, C_0)
-                    self.__logger.info("found {} solution C0 = {:.2f}".format(solution_types[solution_type], C_0))
-                    results.append({'type': solution_type,
-                                    'C0': C_0,
-                                    'C1': self.get_C_1(x1, C_0),
-                                    'reflection': reflection,
-                                    'reflection_case': reflection_case})
-            else:
-                self.__logger.info("no solution with logC0 > {:.3f} exists".format(result.x[0]))
-
-            logC0_start = -100
-            logC0_stop = result.x[0] - 0.0001
-            delta_start = self.obj_delta_y(logC0_start, x1, x2, reflection, reflection_case)
-            delta_stop = self.obj_delta_y(logC0_stop, x1, x2, reflection, reflection_case)
-        #     print(logC0_start, logC0_stop, delta_start, delta_stop, np.sign(delta_start), np.sign(delta_stop))
-            if(np.sign(delta_start) != np.sign(delta_stop)):
-                self.__logger.info("solution with logC0 < {:.3f} exists".format(result.x[0]))
-                result3 = optimize.brentq(self.obj_delta_y, logC0_start, logC0_stop, args=(x1, x2, reflection, reflection_case))
-
-                if(plot):
-                    self.plot_result(x1, x2, self.get_C0_from_log(result3), ax)
-                if(np.round(result3, 3) not in np.round(C0s, 3)):
-                    C_0 = self.get_C0_from_log(result3)
-                    C0s.append(C_0)
-                    solution_type = self.determine_solution_type(x1, x2, C_0)
-                    self.__logger.info("found {} solution C0 = {:.2f}".format(solution_types[solution_type], C_0))
-                    results.append({'type': solution_type,
-                                    'C0': C_0,
-                                    'C1': self.get_C_1(x1, C_0),
-                                    'reflection': reflection,
-                                    'reflection_case': reflection_case})
-            else:
-                self.__logger.info("no solution with logC0 < {:.3f} exists".format(result.x[0]))
-
-            if(plot):
-                import matplotlib.pyplot as plt
-                plt.show()
-
-            return sorted(results, key=itemgetter('reflection', 'C0'))
+            return self.python_find_solutions(x1, x2, plot, reflection, reflection_case)
 
     def plot_result(self, x1, x2, C_0, ax):
         """
@@ -1428,7 +1430,6 @@ class ray_tracing_2D(ray_tracing_base):
         ycrit = self.get_y(gcrit, C0crit, self.get_C_1(x1, C0crit))
 
         if plot:
-            import matplotlib.pyplot as plt
             plt.figure('in_refraction_zone')
             plt.grid(True)
             plt.plot(ycrit, 0, 'ro', label='turning point')
@@ -1562,7 +1563,6 @@ class ray_tracing_2D(ray_tracing_base):
             self.__logger.info(' travel time is {} ns.'.format(ttosurf / units.ns))
 
             if draw:
-                import matplotlib.pyplot as plt
                 z = np.linspace(x[1], zsurf, 1000, endpoint=True)
                 y = self.get_y(self.get_gamma(z), C0_emit, C_1=self.get_C_1(x, C0_emit))
                 if x == x1:
