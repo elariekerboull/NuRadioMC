@@ -3,12 +3,15 @@ from NuRadioMC.utilities import medium
 from NuRadioReco.utilities import units
 import matplotlib.pyplot as plt
 import numpy as np
+import time
+
 import logging
 logging.basicConfig()
 
 logger = logging.getLogger('ray_tracing_modules')
 solution_types = propagation.solution_types
-ray_tracing_modules = propagation.available_modules
+# ray_tracing_modules = propagation.available_modules
+ray_tracing_modules = ['analytic','analytic','analytic','analytic']
 plot_line_styles = ["-", "--", ":", "-."]
 
 ### This example shows the ray tracing results for the different 
@@ -40,6 +43,9 @@ for i_module, ray_tracing_module in enumerate(ray_tracing_modules):
     rays.set_start_and_end_point(initial_point,final_point)
     rays.find_solutions()
 
+    start = time.perf_counter()
+
+
     for i_solution in range(rays.get_number_of_solutions()):
 
         solution_int = rays.get_solution_type(i_solution)
@@ -63,6 +69,9 @@ for i_module, ray_tracing_module in enumerate(ray_tracing_modules):
         path_length = rays.get_path_length(i_solution)
         # And the travel time
         travel_time = rays.get_travel_time(i_solution)
+    end = time.perf_counter()
+
+    print("Elapsed (rays) = {}s".format((end - start)))
 
     # We can also calculate the attenuation for a set of frequencies
     if ray_tracing_module == 'direct_ray': # no attenuation for direct_ray ray tracer
