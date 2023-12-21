@@ -152,7 +152,7 @@ class ray_tracing_helper():
         if(reflection > 0 and reflection_case == 2):
             y_turn = self.get_y_turn(C_0, x1)
             dy = y_turn - x1[0]
-            x1[0] = x1[0] - 2 * dy
+            x1[0] -= 2 * dy[0]
 
         for i in range(reflection):
             # we take account reflections at the bottom layer into account via
@@ -240,7 +240,7 @@ class ray_tracing_helper():
         C_1: (float)
             second parameter
         """
-        c = self.medium.n_ice ** 2 - C_0 ** -2
+        c = self.n_ice ** 2 - C_0 ** -2
         gamma_turn, z_turn = self.get_turning_point(c)
         y_turn = self.get_y(gamma_turn, C_0, C_1)
         if(not hasattr(z, '__len__')):
@@ -282,12 +282,12 @@ class ray_tracing_helper():
         -------
         typle (gamma, z coordinate of turning point)
         """
-        gamma2 = self.__b * 0.5 - (0.25 * self.__b ** 2 - c) ** 0.5, dtype=np.float64  # first solution discarded
+        gamma2 = self.__b * 0.5 - (0.25 * self.__b ** 2 - c) ** 0.5  # first solution discarded
         z2 = np.log(gamma2 / self.delta_n) * self.z_0
 
         if(z2 > 0):
-            z2 = 0  # a reflection is just a turning point at z = 0, i.e. cases 2) and 3) are the same
-            gamma2 = np.array(self.get_gamma(z2),dtype=np.float64)
+            z2 = np.zeros(1,)  # a reflection is just a turning point at z = 0, i.e. cases 2) and 3) are the same
+            gamma2 = self.get_gamma(z2)
 
         return gamma2  , z2
 
@@ -327,6 +327,17 @@ class ray_tracing_helper():
         C_0 = self.get_C0_from_log(logC_0)
         return self.get_delta_y(C_0, copy.copy(x1), x2, reflection=reflection, reflection_case=reflection_case)
 
+    def get_reflection_point(self, C_0, C_1):
+        """
+        calculates the point where the signal gets reflected off the bottom of the ice shelf
+
+        Returns tuple (y,z)
+        """
+        c = self.n_ice ** 2 - C_0 ** -2
+        gamma_turn, z_turn = self.get_turning_point(c)
+        x2 = np.array([0, self.reflection],dtype = np.float64)
+        x2[0] = self.get_y_with_z_mirror(-x2[1] + 2 * z_turn, C_0, C_1)
+        return x2
 # @jitclass
 class ray_tracing_2D(ray_tracing_base):
 
@@ -1105,17 +1116,6 @@ class ray_tracing_2D(ray_tracing_base):
         mask = yy > x11[0]
         return yy[mask], zz[mask]
 
-    def get_reflection_point(self, C_0, C_1):
-        """
-        calculates the point where the signal gets reflected off the bottom of the ice shelf
-
-        Returns tuple (y,z)
-        """
-        c = self.medium.n_ice ** 2 - C_0 ** -2
-        gamma_turn, z_turn = self.helper.get_turning_point(c)
-        x2 = [0, self.medium.reflection]
-        x2[0] = self.helper.get_y_with_z_mirror(-x2[1] + 2 * z_turn, C_0, C_1)
-        return x2
    
     def determine_solution_type(self, x1, x2, C_0):
         """ returns the type of the solution
