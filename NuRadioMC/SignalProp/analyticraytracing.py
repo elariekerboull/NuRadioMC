@@ -213,7 +213,9 @@ class ray_tracing_helper():
         """
         objective function to find solution for C0
         """
+        print("obj_delta_y_square part 1")
         C_0 = self.get_C0_from_log(logC_0)
+        print("obj_delta_y_square part 2")
         return self.get_delta_y(C_0, x1, x2, C0range=[0,0], reflection=reflection, reflection_case=reflection_case) ** 2
     
     def get_y_turn(self, C_0, x1):
@@ -255,7 +257,7 @@ class ray_tracing_helper():
         y_turn = self.get_y(gamma_turn, C_0, C_1)
         if(not hasattr(z, '__len__')):
             if(z < z_turn):
-                gamma = self.get_gamma(z)
+                gamma = self.get_gamma(np.array([1])*z)
                 return self.get_y(gamma, C_0, C_1)
             else:
                 gamma = self.get_gamma(2 * z_turn - z)
@@ -291,15 +293,14 @@ class ray_tracing_helper():
         -------
         typle (gamma, z coordinate of turning point)
         """
-        gamma2 = self.__b * 0.5 - (0.25 * self.__b ** 2 - c) ** 0.5  # first solution discarded
-        z2_array = np.zeros_like(gamma2)
+        gamma2 = (np.array([self.__b * 0.5 - (0.25 * self.__b ** 2 )], dtype=np.float64) - c) ** 0.5  # first solution discarded
         z2 = np.log(gamma2 / self.delta_n) * self.z_0
 
         if(z2 > 0):
-            z2 = 0.  # a reflection is just a turning point at z = 0, i.e. cases 2) and 3) are the same
+            z2 = np.array([0], dtype=np.float64)  # a reflection is just a turning point at z = 0, i.e. cases 2) and 3) are the same
             gamma2 = self.get_gamma(z2)
 
-        return (gamma2  , z2)
+        return gamma2  , z2
 
     def get_y(self, gamma, C_0, C_1):
         """
@@ -346,7 +347,7 @@ class ray_tracing_helper():
         c = self.n_ice ** 2 - C_0 ** -2
         _gamma_turn, z_turn = self.get_turning_point(c)
         x2 = np.array([0, self.reflection],dtype = np.float64)
-        x2[0] = self.get_y_with_z_mirror(-x2[1] + 2 * z_turn, C_0, C_1)
+        x2[0] ,  = self.get_y_with_z_mirror(-x2[1] + 2 * z_turn, C_0, C_1)
         return x2
 # @jitclass
 class ray_tracing_2D(ray_tracing_base):
@@ -1213,7 +1214,7 @@ class ray_tracing_2D(ray_tracing_base):
                 logC_0_start = -1
             deltay = self.helper.obj_delta_y_square
             t = time.time()
-            result = optimize.root(deltay, x0=logC_0_start, args=(np.array(x1), x2, reflection, reflection_case), tol=tol)
+            result = optimize.root(deltay, x0=logC_0_start, args=(np.array(x1), np.array(x2), reflection, reflection_case), tol=tol)
             print((time.time() -t))
 
             end = time.perf_counter()
