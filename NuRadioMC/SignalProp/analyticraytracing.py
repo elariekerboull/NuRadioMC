@@ -126,32 +126,29 @@ class ray_tracing_helper():
         """
         return np.exp(logC0) + 1. / self.n_ice
     
-    def get_delta_y(self, C_0, x1, x2, C0range=[0,0], reflection=0, reflection_case=2):
+    def get_delta_y(self, C_0, x1, x2, C0range=None, reflection=0, reflection_case=2):
         """
         calculates the difference in the y position between the analytic ray tracing path
         specified by C_0 at the position x2
         """
-        c_0 = 0.
-        c_0 = np.float64(C_0[0])
-        range1 = np.float64(C0range[0])
-        range2 = np.float64(C0range[2])
-
-        if(C0range[0] == 0.):
-            C0range = [1. / self.n_ice, np.inf]
-        #if(hasattr(C_0, '__len__')):
-        #    c_0 = C_0[0]
-        if((c_0 < range1) or(c_0 > range2)):
-            return np.array([-np.inf])
-        c = self.n_ice ** 2 - c_0 ** -2
+        if(C0range is None):
+            C0range = [1. / self.medium.n_ice, np.inf]
+        if(hasattr(C_0, '__len__')):
+            C_0 = C_0[0]
+        if((C_0 < C0range[0]) or(C_0 > C0range[1])):
+            self.__logger.debug('C0 = {:.4f} out of range {:.0f} - {:.2f}'.format(C_0, C0range[0], C0range[1]))
+            return -np.inf
+        c = self.medium.n_ice ** 2 - C_0 ** -2
 
         # we consider two cases here,
         # 1) the rays start rising -> the default case
         # 2) the rays start decreasing -> we need to find the position left of the start point that
         #    that has rising rays that go through the point x1
         if(reflection > 0 and reflection_case == 2):
-            y_turn = self.get_y_turn(c_0, x1)
-            dy = np.subtract(y_turn, x1[0])
-            x1[0] -= 2.0 #* dy[0]
+            y_turn = self.get_y_turn(C_0, x1)
+            dy = y_turn - x1[0]
+            self.__logger.debug("relaction case 2: shifting x1 {} to {}".format(x1, x1[0] - 2 * dy))
+            x1[0] = x1[0] - 2 * dy
 
         for i in range(reflection):
             # we take account reflections at the bottom layer into account via
@@ -160,54 +157,62 @@ class ray_tracing_helper():
 
             # determine y translation first
             C_1 = x1[0] - self.get_y_with_z_mirror(x1[1], C_0)
-            c_1 = 0.
             if(hasattr(C_1, '__len__')):
-                c_1 = np.array([C_1[0]])
+                C_1 = C_1[0]
 
-            x1 = self.get_reflection_point(c_0, c_1)
+            self.__logger.debug("C_0 = {:.4f}, C_1 = {:.1f}".format(C_0, C_1))
+            x1 = self.get_reflection_point(C_0, C_1)
 
         # determine y translation first
-        #C_1 = x1[0] - self.get_y_with_z_mirror(x1[1], C_0)
-        #if(hasattr(C_1, '__len__')):
-        #    C_1 = np.array([C_1[0]])
+        C_1 = x1[0] - self.get_y_with_z_mirror(x1[1], C_0)
+        if(hasattr(C_1, '__len__')):
+            C_1 = C_1[0]
+
+        self.__logger.debug("C_0 = {:.4f}, C_1 = {:.1f}".format(C_0, C_1))
 
         # for a given c_0, 3 cases are possible to reach the y position of x2
         # 1) direct ray, i.e., before the turning point
         # 2) refracted ray, i.e. after the turning point but not touching the surface
         # 3) reflected ray, i.e. after the ray reaches the surface
         gamma_turn, z_turn = self.get_turning_point(c)
-        #y_turn = self.get_y(gamma_turn, C_0, C_1)
-        y_turn = 0.
-        diff = np.zeros(2,)
-        #if(z_turn < x2[1]):  # turning points is deeper that x2 positions, can't reach target
+        y_turn = self.get_y(gamma_turn, C_0, C_1)
+        if(z_turn < x2[1]):  # turning points is deeper that x2 positions, can't reach target
             # the minimizer has problems finding the minimum if inf is returned here. Therefore, we return the distance
             # between the turning point and the target point + 10 x the distance between the z position of the turning points
             # and the target position. This results in a objective function that has the solutions as the only minima and
             # is smooth in C_0
-        #    diff = ((z_turn - x2[1]) ** 2 + (y_turn - x2[0]) ** 2) ** 0.5 + 10 * np.abs(z_turn - x2[1])
-        #    return -diff
+            diff = ((z_turn - x2[1]) ** 2 + (y_turn - x2[0]) ** 2) ** 0.5 + 10 * np.abs(z_turn - x2[1])
+            self.__logger.debug(
+                "turning points (zturn = {:.0f} is deeper than x2 positon z2 = {:.0f}, setting distance to target position to {:.1f}".format(z_turn, x2[1], -diff))
+            return -diff
 #             return -np.inf
+        self.__logger.debug('turning points is z = {:.1f}, y =  {:.1f}'.format(z_turn, y_turn))
         if(y_turn > x2[0]):  # we always propagate from left to right
             # direct ray
-            #y2_fit = self.get_y(self.get_gamma(x2[1]), C_0, C_1)  # calculate y position at get_path position
-            diff = np.zeros(2,)
-            #if(hasattr(diff, '__len__')):
-            #    diff = diff[0]
-            #if(hasattr(x2[0], '__len__')):
-            #    x2[0] = x2[0][0]
+            y2_fit = self.get_y(self.get_gamma(x2[1]), C_0, C_1)  # calculate y position at get_path position
+            diff = (x2[0] - y2_fit)
+            if(hasattr(diff, '__len__')):
+                diff = diff[0]
+            if(hasattr(x2[0], '__len__')):
+                x2[0] = x2[0][0]
 
+            self.__logger.debug(
+                'we have a direct ray, y({:.1f}) = {:.1f} -> {:.1f} away from {:.1f}, turning point = y={:.1f}, z={:.2f}, x0 = {:.1f} {:.1f}'.format(x2[1], y2_fit, diff, x2[0], y_turn, z_turn, x1[0], x1[1]))
             return diff
-        #else:
+        else:
             # now it's a bit more complicated. we need to transform the coordinates to
             # be on the mirrored part of the function
-        #    z_mirrored = x2[1]
-        #    gamma = self.get_gamma(z_mirrored)
-        #    y2_raw = self.get_y(gamma, C_0, C_1)
-        #    y2_fit = 2 * y_turn - y2_raw
-        #    diff = (x2[0] - y2_fit)
+            z_mirrored = x2[1]
+            gamma = self.get_gamma(z_mirrored)
+            self.__logger.debug("get_y( {}, {}, {})".format(gamma, C_0, C_1))
+            y2_raw = self.get_y(gamma, C_0, C_1)
+            y2_fit = 2 * y_turn - y2_raw
+            diff = (x2[0] - y2_fit)
 
-        #    return -1 * diff
-        return C_0
+            self.__logger.debug('we have a reflected/refracted ray, y({:.1f}) = {:.1f} ({:.1f}) -> {:.1f} away from {:.1f} (gamma = {:.5g})'.format(
+                z_mirrored, y2_fit, y2_raw, diff, x2[0], gamma))
+            return -1 * diff
+
     
     def obj_delta_y_square(self, logC_0, x1, x2, reflection=0, reflection_case=2):
         """
