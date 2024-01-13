@@ -209,7 +209,7 @@ class ray_tracing_helper():
         objective function to find solution for C0
         """
         C_0 = self.get_C0_from_log(logC_0[0])
-        return self.get_delta_y(C_0, x1, x2, C0range=[0,0], reflection=reflection, reflection_case=reflection_case) ** 2
+        return self.get_delta_y(C_0, x1, x2, None, reflection=reflection, reflection_case=reflection_case) ** 2
     
     def get_y_turn(self, C_0, x1):
         """
