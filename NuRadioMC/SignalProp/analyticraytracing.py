@@ -126,17 +126,20 @@ class ray_tracing_helper():
         """
         return np.exp(logC0) + 1. / self.n_ice
     
-    def get_delta_y(self, C_0, x1, x2, C0range=[-1,-1], reflection=0, reflection_case=2):
+    
+    def get_delta_y(self, C_0, x1, x2, C0range=None, reflection=0, reflection_case=2):
         """
         calculates the difference in the y position between the analytic ray tracing path
         specified by C_0 at the position x2
         """
-        C_0_first = C_0[0]
-        if(C0range[0] == C0range[1]):
+        C_0_first = C_0
+
+        if C0range is None:
             C0range = [1. / self.n_ice, np.inf]
-        if(hasattr(C_0, '__len__')):
-            C_0 = C_0[0]
-        if((C_0_first < C0range[0]) or(C_0_first > C0range[1])):
+        else:
+            C0range = [float(C0range[0]), float(C0range[1])]
+        Corange_array = np.array(C0range ,  dtype=np.float64)
+        if((C_0_first < Corange_array[0]) or(C_0_first > Corange_array[1])):
             return np.array([-np.inf])
         c = self.n_ice ** 2 - C_0 ** -2
         # we consider two cases here,
@@ -205,9 +208,7 @@ class ray_tracing_helper():
         """
         objective function to find solution for C0
         """
-        print("obj_delta_y_square part 1")
-        C_0 = self.get_C0_from_log(logC_0)
-        print("obj_delta_y_square part 2")
+        C_0 = self.get_C0_from_log(logC_0[0])
         return self.get_delta_y(C_0, x1, x2, C0range=[0,0], reflection=reflection, reflection_case=reflection_case) ** 2
     
     def get_y_turn(self, C_0, x1):
@@ -323,14 +324,6 @@ class ray_tracing_helper():
         """
         return self.delta_n * (np.exp(z / self.z_0))
     
-    def obj_delta_y(self, logC_0, x1, x2, reflection=0, reflection_case=2):
-        """
-        function to find solution for C0, returns distance in y between function and x2 position
-        result is signed! (important to use a root finder)
-        """
-        C_0 = self.get_C0_from_log(logC_0)
-        return self.get_delta_y(C_0, x1.copy(), x2, reflection=reflection, reflection_case=reflection_case)
-
     def get_reflection_point(self, C_0, C_1):
         """
         calculates the point where the signal gets reflected off the bottom of the ice shelf
@@ -411,6 +404,23 @@ class ray_tracing_2D(ray_tracing_base):
     #     else:
     #         res[z > 0] = 1.
         return res
+
+    def obj_delta_y_square(self, logC_0, x1, x2, reflection=0, reflection_case=2):
+        """
+        objective function to find solution for C0
+        """
+        C_0 = self.helper.get_C0_from_log(logC_0)
+        return self.helper.get_delta_y(float(C_0), x1, x2, C0range=[0,0], reflection=reflection, reflection_case=reflection_case) ** 2
+
+    def obj_delta_y(self, logC_0, x1, x2, reflection=0, reflection_case=2):
+        """
+        function to find solution for C0, returns distance in y between function and x2 position
+        result is signed! (important to use a root finder)
+        """
+        C_0 = self.helper.get_C0_from_log(logC_0)
+        if(hasattr(C_0, '__len__')):
+                C_0 = C_0[0]
+        return self.helper.get_delta_y(C_0, np.array(x1), np.array(x2), None, reflection, reflection_case)
 
     def get_C_1(self, x1, C_0):
         """
@@ -1030,24 +1040,24 @@ class ray_tracing_2D(ray_tracing_base):
             the z coordinates of the ray tracing path
         """
         c = self.medium.n_ice ** 2 - C_0 ** -2
-        C_1 = x1[0] - self.get_y_with_z_mirror(x1[1], C_0)
+        C_1 = x1[0] - self.helper.get_y_with_z_mirror(x1[1], C_0)
         gamma_turn, z_turn = self.helper.get_turning_point(c)
-        y_turn = self.get_y(gamma_turn, C_0, C_1)
+        y_turn = self.helper.get_y(gamma_turn, C_0, C_1)
         zstart = x1[1]
         zstop = self.get_z_mirrored(x1, x2, C_0)[1]
         z = np.linspace(zstart, zstop, n_points)
         mask = z < z_turn
         res = np.zeros_like(z)
         zs = np.zeros_like(z)
-        gamma = self.get_gamma(z[mask])
+        gamma = self.helper.get_gamma(z[mask])
         zs[mask] = z[mask]
-        res[mask] = self.get_y(gamma, C_0, C_1)
-        gamma = self.get_gamma(2 * z_turn - z[~mask])
-        res[~mask] = 2 * y_turn - self.get_y(gamma, C_0, C_1)
+        res[mask] = self.helper.get_y(gamma, C_0, C_1)
+        gamma = self.helper.get_gamma(2 * z_turn - z[~mask])
+        res[~mask] = 2 * y_turn - self.helper.get_y(gamma, C_0, C_1)
         zs[~mask] = 2 * z_turn - z[~mask]
 
         self.__logger.debug('turning points for C_0 = {:.2f}, b= {:.2f}, gamma = {:.4f}, z = {:.1f}, y_turn = {:.0f}'.format(
-            C_0, self.__b, gamma_turn, z_turn, y_turn))
+            C_0, self.__b, gamma_turn[0], z_turn[0], y_turn[0]))
         return res, zs
 
     def get_path_reflections(self, x1, x2, C_0, n_points=1000, reflection=0, reflection_case=1):
@@ -1231,14 +1241,14 @@ class ray_tracing_2D(ray_tracing_base):
                                     'reflection_case': reflection_case})
 
             # check if another solution with higher logC0 exists
-            logC0_start = result.x[0] + 0.0001
-            logC0_stop = 100.0
-            delta_start = self.helper.obj_delta_y(logC0_start, x1, x2, reflection, reflection_case)
-            delta_stop = self.helper.obj_delta_y(logC0_stop, x1, x2, reflection, reflection_case)
+            logC0_start = np.array([result.x[0] + 0.0001])
+            logC0_stop = np.array([100.0])
+            delta_start = self.obj_delta_y(logC0_start, np.array(x1), np.array(x2), reflection, reflection_case)
+            delta_stop = self.obj_delta_y(logC0_stop, np.array(x1), np.array(x2), reflection, reflection_case)
         #     print(logC0_start, logC0_stop, delta_start, delta_stop, np.sign(delta_start), np.sign(delta_stop))
             if(np.sign(delta_start) != np.sign(delta_stop)):
                 self.__logger.info("solution with logC0 > {:.3f} exists".format(result.x[0]))
-                result2 = optimize.brentq(self.helper.obj_delta_y, logC0_start, logC0_stop, args=(x1, x2, reflection, reflection_case))
+                result2 = optimize.brentq(self.obj_delta_y, logC0_start, logC0_stop, args=(np.array(x1), np.array(x2), reflection, reflection_case))
                 if(plot):
                     self.plot_result(x1, x2, self.helper.get_C0_from_log(result2), ax)
                 if(np.round(result2, 3) not in np.round(C0s, 3)):
@@ -1259,12 +1269,12 @@ class ray_tracing_2D(ray_tracing_base):
 
             logC0_start = -100.0
             logC0_stop = result.x[0] - 0.0001
-            delta_start = self.helper.obj_delta_y(logC0_start, x1, x2, reflection, reflection_case)
-            delta_stop = self.helper.obj_delta_y(logC0_stop, x1, x2, reflection, reflection_case)
+            delta_start = self.obj_delta_y(logC0_start, x1, x2, reflection, reflection_case)
+            delta_stop = self.obj_delta_y(logC0_stop, x1, x2, reflection, reflection_case)
         #     print(logC0_start, logC0_stop, delta_start, delta_stop, np.sign(delta_start), np.sign(delta_stop))
             if(np.sign(delta_start) != np.sign(delta_stop)):
                 self.__logger.info("solution with logC0 < {:.3f} exists".format(result.x[0]))
-                result3 = optimize.brentq(self.helper.obj_delta_y, logC0_start, logC0_stop, args=(x1, x2, reflection, reflection_case))
+                result3 = optimize.brentq(self.obj_delta_y, logC0_start, logC0_stop, args=(x1, x2, reflection, reflection_case))
                 end = time.perf_counter()
                 # print("Elapsed (2.5st mark) = {}s".format((end - start)))
 
