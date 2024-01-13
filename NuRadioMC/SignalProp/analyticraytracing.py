@@ -126,26 +126,25 @@ class ray_tracing_helper():
         """
         return np.exp(logC0) + 1. / self.n_ice
     
-    def get_delta_y(self, C_0, x1, x2, C0range=None, reflection=0, reflection_case=2):
+    def get_delta_y(self, C_0, x1, x2, C0range=[-1,-1], reflection=0, reflection_case=2):
         """
         calculates the difference in the y position between the analytic ray tracing path
         specified by C_0 at the position x2
         """
-        x1[0] = C_0
-        if(C0range is None):
+        C_0_first = C_0[0]
+        if(C0range[0] == C0range[1]):
             C0range = [1. / self.n_ice, np.inf]
         if(hasattr(C_0, '__len__')):
             C_0 = C_0[0]
-        if((C_0 < C0range[0]) or(C_0 > C0range[1])):
+        if((C_0_first < C0range[0]) or(C_0_first > C0range[1])):
             return np.array([-np.inf])
         c = self.n_ice ** 2 - C_0 ** -2
-
         # we consider two cases here,
         # 1) the rays start rising -> the default case
         # 2) the rays start decreasing -> we need to find the position left of the start point that
         #    that has rising rays that go through the point x1
         if(reflection > 0 and reflection_case == 2):
-            y_turn = self.get_y_turn(C_0, x1)
+            y_turn = self.get_y_turn(C_0_first, x1)
             dy = y_turn - x1[0]
             x1[0] = x1[0] - 2 * dy
 
@@ -155,14 +154,14 @@ class ray_tracing_helper():
             # 2) starting a ray tracing from this new point
 
             # determine y translation first
-            C_1 = x1[0] - self.get_y_with_z_mirror(x1[1], C_0)
+            C_1 = x1[0] - self.get_y_with_z_mirror(x1[1], C_0_first)
             if(hasattr(C_1, '__len__')):
                 C_1 = C_1[0]
 
             x1 = self.get_reflection_point(C_0, C_1)
 
         # determine y translation first
-        C_1 = x1[0] - self.get_y_with_z_mirror(x1[1], C_0)
+        C_1 = x1[0] - self.get_y_with_z_mirror(x1[1], C_0_first)
         if(hasattr(C_1, '__len__')):
             C_1 = C_1[0]
 
@@ -171,7 +170,7 @@ class ray_tracing_helper():
         # 2) refracted ray, i.e. after the turning point but not touching the surface
         # 3) reflected ray, i.e. after the ray reaches the surface
         gamma_turn, z_turn = self.get_turning_point(c)
-        y_turn = self.get_y(gamma_turn, C_0, C_1)
+        y_turn = self.get_y(gamma_turn, C_0_first, C_1)
         if(z_turn < x2[1]):  # turning points is deeper that x2 positions, can't reach target
             # the minimizer has problems finding the minimum if inf is returned here. Therefore, we return the distance
             # between the turning point and the target point + 10 x the distance between the z position of the turning points
@@ -182,7 +181,7 @@ class ray_tracing_helper():
 #             return -np.inf
         if(y_turn > x2[0]):  # we always propagate from left to right
             # direct ray
-            y2_fit = self.get_y(self.get_gamma(x2[1]), C_0, C_1)  # calculate y position at get_path position
+            y2_fit = self.get_y(self.get_gamma(x2[1]), C_0_first, C_1)  # calculate y position at get_path position
             diff = (x2[0] - y2_fit)
             if(hasattr(diff, '__len__')):
                 diff = diff[0]
@@ -195,7 +194,7 @@ class ray_tracing_helper():
             # be on the mirrored part of the function
             z_mirrored = x2[1]
             gamma = self.get_gamma(z_mirrored)
-            y2_raw = self.get_y(gamma, C_0, C_1)
+            y2_raw = self.get_y(gamma, C_0_first, C_1)
             y2_fit = 2 * y_turn - y2_raw
             diff = (x2[0] - y2_fit)
 
@@ -207,7 +206,6 @@ class ray_tracing_helper():
         objective function to find solution for C0
         """
         print("obj_delta_y_square part 1")
-        x1[0] = logC_0
         C_0 = self.get_C0_from_log(logC_0)
         print("obj_delta_y_square part 2")
         return self.get_delta_y(C_0, x1, x2, C0range=[0,0], reflection=reflection, reflection_case=reflection_case) ** 2
@@ -228,7 +226,7 @@ class ray_tracing_helper():
         gamma_turn, z_turn = self.get_turning_point(c)
         C_1_temp ,  = self.get_y_with_z_mirror(x1[1], C_0)
         C_1 = x1[0] - C_1_temp
-        y_turn = self.get_y(gamma_turn, C_0, C_1)        
+        y_turn = self.get_y(gamma_turn[0], C_0, C_1) 
         return y_turn
     
     def get_y_with_z_mirror(self, z, C_0, C_1=0.0):
