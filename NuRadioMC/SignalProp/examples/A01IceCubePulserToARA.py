@@ -38,7 +38,6 @@ start = time.perf_counter()
 
 r = ray.ray_tracing_2D(medium.southpole_simple())
 solution = r.find_solutions(x1, x2)
-print(solution)
 fig, ax = plt.subplots(1, 1)
 yyy, zzz = r.get_path(x1, x2, solution[0]['C0'])
 ax.plot(yyy / units.m, zzz / units.m)

@@ -78,7 +78,6 @@ def get_segments(x1, x2, dx):
         return np.array([x1])
     return np.linspace(x1, x2, get_n_steps(x1, x2, dx))
 
-#@jitclass
 @lru_cache(maxsize=32)
 def get_z_deep(ice_params):
     """
@@ -773,10 +772,9 @@ class ray_tracing_2D(ray_tracing_base):
                 tmp_attenuation[mask] = np.interp(frequency[mask], freqs, tmp)
             
             else:
-                start = time.perf_counter()
+                #start = time.perf_counter()
 
                 x2_mirrored = self.get_z_mirrored(x1, x2, C_0)
-                #print("Here")
 
                 def dt(t, C_0, frequency):
                     z = self.get_z_unmirrored(t, C_0)
@@ -850,7 +848,7 @@ class ray_tracing_2D(ray_tracing_base):
                             attenuation_util.get_attenuation_length(z_turn, f, self.attenuation_model) for f in freqs])
                             
                         attenuation_exp_tmp[:, idx] = att_int
-                    end = time.perf_counter()
+                    #end = time.perf_counter()
                     #print("Elapsed (1st mark) = {}s".format((end - start)))
                     # sum over all segments
                     attenuation_exp = np.sum(attenuation_exp_tmp, axis=1)
@@ -1192,7 +1190,7 @@ class ray_tracing_2D(ray_tracing_base):
             print("using CPP:",(time.time() -t))
             return solutions
         else:
-            start1 = time.perf_counter()
+            #start1 = time.perf_counter()
 
             tol = 1e-6
             results = []
@@ -1214,13 +1212,13 @@ class ray_tracing_2D(ray_tracing_base):
             else:
                 logC_0_start = -1
             deltay = self.helper.obj_delta_y_square
-            t = time.time()
+            #t = time.time()
             result = optimize.root(deltay, x0=logC_0_start, args=(np.array(x1), np.array(x2), reflection, reflection_case), tol=tol)
-            print((time.time() -t))
+            #print((time.time() -t))
 
-            end = time.perf_counter()
+            #end = time.perf_counter()
             # print("Elapsed (1st mark) = {}s".format((end - start1)))
-            start = time.perf_counter()
+            #start = time.perf_counter()
 
             if(plot):
                 import matplotlib.pyplot as plt
@@ -1262,9 +1260,9 @@ class ray_tracing_2D(ray_tracing_base):
                                     'reflection_case': reflection_case})
             else:
                 self.__logger.info("no solution with logC0 > {:.3f} exists".format(result.x[0]))
-            end = time.perf_counter()
+            #end = time.perf_counter()
             # print("Elapsed (2nd measure) = {}s".format((end - start1)))
-            start = time.perf_counter()
+            #start = time.perf_counter()
 
             logC0_start = -100.0
             logC0_stop = result.x[0] - 0.0001
@@ -1274,7 +1272,7 @@ class ray_tracing_2D(ray_tracing_base):
             if(np.sign(delta_start) != np.sign(delta_stop)):
                 self.__logger.info("solution with logC0 < {:.3f} exists".format(result.x[0]))
                 result3 = optimize.brentq(self.obj_delta_y, logC0_start, logC0_stop, args=(x1, x2, reflection, reflection_case))
-                end = time.perf_counter()
+                #end = time.perf_counter()
                 # print("Elapsed (2.5st mark) = {}s".format((end - start)))
 
                 if(plot):
@@ -1291,9 +1289,9 @@ class ray_tracing_2D(ray_tracing_base):
                                     'reflection_case': reflection_case})
             else:
                 self.__logger.info("no solution with logC0 < {:.3f} exists".format(result.x[0]))
-            end = time.perf_counter()
+            #end = time.perf_counter()
             # print("Elapsed (3rd measure) = {}s".format((end - start)))
-            print("Elapsed (total find_solutions) = {}s".format((end - start1)))
+            #print("Elapsed (total find_solutions) = {}s".format((end - start1)))
             # print(result)
             if(plot):
                 import matplotlib.pyplot as plt
