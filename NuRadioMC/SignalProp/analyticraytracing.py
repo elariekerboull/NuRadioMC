@@ -848,8 +848,6 @@ class ray_tracing_2D(ray_tracing_base):
                             attenuation_util.get_attenuation_length(z_turn, f, self.attenuation_model) for f in freqs])
                             
                         attenuation_exp_tmp[:, idx] = att_int
-                    #end = time.perf_counter()
-                    #print("Elapsed (1st mark) = {}s".format((end - start)))
                     # sum over all segments
                     attenuation_exp = np.sum(attenuation_exp_tmp, axis=1)
 
@@ -1012,6 +1010,12 @@ class ray_tracing_2D(ray_tracing_base):
                 output.append(None)
         return np.squeeze(output)
 
+    def get_gamma(self, z):
+        """
+        transforms z coordinate into gamma
+        """
+        return self.medium.delta_n * (np.exp(z / self.medium.z_0))
+
     def get_path(self, x1, x2, C_0, n_points=1000):
         """
         for plotting purposes only, returns the ray tracing path between x1 and x2
@@ -1036,22 +1040,42 @@ class ray_tracing_2D(ray_tracing_base):
         zz: array
             the z coordinates of the ray tracing path
         """
+        start = time.perf_counter()
+
         c = self.medium.n_ice ** 2 - C_0 ** -2
         C_1 = x1[0] - self.helper.get_y_with_z_mirror(x1[1], C_0)
         gamma_turn, z_turn = self.helper.get_turning_point(c)
+
+        end = time.perf_counter()
+        print("Elapsed (1) = {}s".format((end - start)))
+        start = time.perf_counter()
+
         y_turn = self.helper.get_y(gamma_turn, C_0, C_1)
         zstart = x1[1]
         zstop = self.get_z_mirrored(x1, x2, C_0)[1]
         z = np.linspace(zstart, zstop, n_points)
+
+        
         mask = z < z_turn
         res = np.zeros_like(z)
         zs = np.zeros_like(z)
-        gamma = self.helper.get_gamma(z[mask])
+        end = time.perf_counter()
+        print("Elapsed (2) = {}s".format((end - start)))
+        start = time.perf_counter()
+        gamma = self.get_gamma(z[mask])
+        end = time.perf_counter()
+        print("Elapsed (3) = {}s".format((end - start)))
+        start = time.perf_counter()
         zs[mask] = z[mask]
+        
+
         res[mask] = self.helper.get_y(gamma, C_0, C_1)
-        gamma = self.helper.get_gamma(2 * z_turn - z[~mask])
+        gamma = self.get_gamma(2 * z_turn - z[~mask])
         res[~mask] = 2 * y_turn - self.helper.get_y(gamma, C_0, C_1)
         zs[~mask] = 2 * z_turn - z[~mask]
+        end = time.perf_counter()
+        print("Elapsed (4) = {}s".format((end - start)))
+        start = time.perf_counter()
 
         self.__logger.debug('turning points for C_0 = {:.2f}, b= {:.2f}, gamma = {:.4f}, z = {:.1f}, y_turn = {:.0f}'.format(
             C_0, self.__b, gamma_turn[0], z_turn[0], y_turn[0]))
@@ -1212,13 +1236,13 @@ class ray_tracing_2D(ray_tracing_base):
             else:
                 logC_0_start = -1
             deltay = self.helper.obj_delta_y_square
-            t = time.time()
+            #t = time.time()
             result = optimize.root(deltay, x0=logC_0_start, args=(np.array(x1), np.array(x2), reflection, reflection_case), tol=tol)
-            print((time.time() -t))
+            #print((time.time() -t))
 
-            end = time.perf_counter()
-            print("Elapsed (1st mark) = {}s".format((end - start1)))
-            start1 = time.perf_counter()
+            #end = time.perf_counter()
+            #print("Elapsed (1st mark) = {}s".format((end - start1)))
+            #start1 = time.perf_counter()
 
             if(plot):
                 import matplotlib.pyplot as plt
@@ -1260,9 +1284,9 @@ class ray_tracing_2D(ray_tracing_base):
                                     'reflection_case': reflection_case})
             else:
                 self.__logger.info("no solution with logC0 > {:.3f} exists".format(result.x[0]))
-            end = time.perf_counter()
-            print("Elapsed (2nd measure) = {}s".format((end - start1)))
-            start1 = time.perf_counter()
+            #end = time.perf_counter()
+            #print("Elapsed (2nd measure) = {}s".format((end - start1)))
+            #start1 = time.perf_counter()
 
             logC0_start = -100.0
             logC0_stop = result.x[0] - 0.0001
@@ -1272,8 +1296,8 @@ class ray_tracing_2D(ray_tracing_base):
             if(np.sign(delta_start) != np.sign(delta_stop)):
                 self.__logger.info("solution with logC0 < {:.3f} exists".format(result.x[0]))
                 result3 = optimize.brentq(self.obj_delta_y, logC0_start, logC0_stop, args=(x1, x2, reflection, reflection_case))
-                end = time.perf_counter()
-                print("Elapsed (2.5st mark) = {}s".format((end - start1)))
+                #end = time.perf_counter()
+                #print("Elapsed (2.5st mark) = {}s".format((end - start1)))
 
                 if(plot):
                     self.plot_result(x1, x2, self.helper.get_C0_from_log(result3), ax)
@@ -1290,7 +1314,7 @@ class ray_tracing_2D(ray_tracing_base):
             else:
                 self.__logger.info("no solution with logC0 < {:.3f} exists".format(result.x[0]))
             end = time.perf_counter()
-            print("Elapsed (3rd measure) = {}s".format((end - start1)))
+            #print("Elapsed (3rd measure) = {}s".format((end - start1)))
             #print("Elapsed (total find_solutions) = {}s".format((end - start1)))
             # print(result)
             if(plot):
