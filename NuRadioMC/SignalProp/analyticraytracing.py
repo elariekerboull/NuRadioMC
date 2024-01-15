@@ -102,13 +102,13 @@ if numba_available:
     optimize_root = jit(optimize.root, nopython=True, cache=True)
     #get_segments = jit(get_segments, nopython=True, cache=True)
 
-spec = [
-    ('n_ice', float64),               
-    ('reflection', int32),
-    ('z_0', float64),
-    ('delta_n', float64),
-    ('__b', float64)
-]
+    spec = [
+        ('n_ice', float64),               
+        ('reflection', int32),
+        ('z_0', float64),
+        ('delta_n', float64),
+        ('__b', float64)
+    ]
 
 @jitclass(spec)
 class ray_tracing_helper():
@@ -287,9 +287,8 @@ class ray_tracing_helper():
         -------
         typle (gamma, z coordinate of turning point)
         """
-        gamma2 = (np.array([self.__b * 0.5 - (0.25 * self.__b ** 2 )], dtype=np.float64) - c) ** 0.5  # first solution discarded
+        gamma2 = np.array([self.__b * 0.5 - (0.25 * self.__b ** 2 - c) ** 0.5])  # first solution discarded
         z2 = np.log(gamma2 / self.delta_n) * self.z_0
-
         if(z2 > 0):
             z2 = np.array([0], dtype=np.float64)  # a reflection is just a turning point at z = 0, i.e. cases 2) and 3) are the same
             gamma2 = self.get_gamma(z2)
