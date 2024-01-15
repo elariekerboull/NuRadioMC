@@ -1046,9 +1046,9 @@ class ray_tracing_2D(ray_tracing_base):
         C_1 = x1[0] - self.helper.get_y_with_z_mirror(x1[1], C_0)
         gamma_turn, z_turn = self.helper.get_turning_point(c)
 
-        end = time.perf_counter()
-        print("Elapsed (1) = {}s".format((end - start)))
-        start = time.perf_counter()
+        #end = time.perf_counter()
+        #print("Elapsed (1) = {}s".format((end - start)))
+        #start = time.perf_counter()
 
         y_turn = self.helper.get_y(gamma_turn, C_0, C_1)
         zstart = x1[1]
@@ -1059,13 +1059,13 @@ class ray_tracing_2D(ray_tracing_base):
         mask = z < z_turn
         res = np.zeros_like(z)
         zs = np.zeros_like(z)
-        end = time.perf_counter()
-        print("Elapsed (2) = {}s".format((end - start)))
-        start = time.perf_counter()
+        #end = time.perf_counter()
+        #print("Elapsed (2) = {}s".format((end - start)))
+        #start = time.perf_counter()
         gamma = self.get_gamma(z[mask])
-        end = time.perf_counter()
-        print("Elapsed (3) = {}s".format((end - start)))
-        start = time.perf_counter()
+        #end = time.perf_counter()
+        #print("Elapsed (3) = {}s".format((end - start)))
+        #start = time.perf_counter()
         zs[mask] = z[mask]
         
 
@@ -1073,9 +1073,9 @@ class ray_tracing_2D(ray_tracing_base):
         gamma = self.get_gamma(2 * z_turn - z[~mask])
         res[~mask] = 2 * y_turn - self.helper.get_y(gamma, C_0, C_1)
         zs[~mask] = 2 * z_turn - z[~mask]
-        end = time.perf_counter()
-        print("Elapsed (4) = {}s".format((end - start)))
-        start = time.perf_counter()
+        #end = time.perf_counter()
+        #print("Elapsed (4) = {}s".format((end - start)))
+        #start = time.perf_counter()
 
         self.__logger.debug('turning points for C_0 = {:.2f}, b= {:.2f}, gamma = {:.4f}, z = {:.1f}, y_turn = {:.0f}'.format(
             C_0, self.__b, gamma_turn[0], z_turn[0], y_turn[0]))
