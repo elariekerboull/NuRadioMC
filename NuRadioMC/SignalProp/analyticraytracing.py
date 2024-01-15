@@ -1190,7 +1190,7 @@ class ray_tracing_2D(ray_tracing_base):
             if(tmp_reflection is None):
                 tmp_reflection = 100  # this parameter will never be used but is required to be an into to be able to pass it to the C++ module, so set it to a positive number, i.e., a reflective layer above the ice
             solutions = wrapper.find_solutions(x1, x2, self.medium.n_ice, self.medium.delta_n, self.medium.z_0, reflection, reflection_case, tmp_reflection)
-            print((time.time() -t))
+            print("using CPP:",(time.time() -t))
             return solutions
         else:
             start1 = time.perf_counter()
