@@ -41,7 +41,6 @@ def GetSolutionsSP(start, end, radio_propa=False, _cache={}):
 
     return rays
 
-start_time = time.perf_counter()
 start = [0, 0, -100]
 
 test_point = [542.8571428571429, 0.0, -150.5]
@@ -55,25 +54,3 @@ print("At a point closer to the surface", test_point, rays.get_number_of_solutio
 test_point = [542.8571428571429, 0.0, -250.5]
 rays = GetSolutionsSP(start, test_point)
 print("At a point further from surface", test_point, rays.get_number_of_solutions())
-
-end = time.perf_counter()
-print("Elapsed = {}s".format((end - start_time)))
-
-start_time = time.perf_counter()
-start = [0, 0, -100]
-
-test_point = [542.8571428571429, 0.0, -150.5]
-rays = GetSolutionsSP(start, test_point)
-print("Number of solutions at test point", test_point, rays.get_number_of_solutions())
-
-test_point = [542.8571428571429, 0.0, -130.5]
-rays = GetSolutionsSP(start, test_point)
-print("At a point closer to the surface", test_point, rays.get_number_of_solutions())
-
-test_point = [542.8571428571429, 0.0, -250.5]
-rays = GetSolutionsSP(start, test_point)
-print("At a point further from surface", test_point, rays.get_number_of_solutions())
-
-end = time.perf_counter()
-print("Elapsed = {}s".format((end - start_time)))
-
