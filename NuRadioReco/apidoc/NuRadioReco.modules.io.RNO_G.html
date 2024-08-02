@@ -78,6 +78,7 @@
 <li class="toctree-l4"><a class="reference internal" href="../../Introduction/pages/conventions.html#points">Points</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../Introduction/pages/conventions.html#angles">Angles</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../Introduction/pages/conventions.html#directions">Directions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../Introduction/pages/conventions.html#electic-fields">Electic Fields</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../Introduction/pages/conventions.html#units">Units</a></li>
@@ -162,8 +163,9 @@
 <li class="toctree-l4"><a class="reference internal" href="../pages/detector/detector_database_fields.html#adc-table">ADC Table</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="../pages/detector/antennamodels.html">Antenna Models</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="../pages/detector/antennamodels.html#overview-of-available-antenna-models">Overview of available Antenna Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pages/detector/antennamodels.html">Antenna Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pages/detector/antennamodels.html#implemetation-of-antenna-models">Implemetation of Antenna Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pages/detector/antennamodels.html#overview-of-available-antenna-models">Overview of available Antenna Models</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../pages/detector/antennamodels.html#bicone-v8-infair">bicone_v8_InfAir</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../pages/detector/antennamodels.html#bicone-v8-inffirn">bicone_v8_InfFirn</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../pages/detector/antennamodels.html#bicone-v8-inf-n1-32">bicone_v8_inf_n1.32</a></li>
@@ -227,7 +229,9 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../pages/detector/rnog.html">The RNO-G detector class and database interface</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../pages/detector/rnog.html#detector-time-and-database-time">Detector time and database time</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../pages/detector/rnog.html#database-data-structure">Database data structure</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../pages/detector/rnog.html#database-structure">Database structure</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../pages/detector/rnog.html#signal-chain">Signal Chain</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../pages/detector/rnog.html#response-class">Response class</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../pages/detector/rnog.html#detector-class">Detector class</a></li>
 </ul>
 </li>
@@ -356,6 +360,7 @@
 <li class="toctree-l5"><a class="reference internal" href="NuRadioReco.utilities.analytic_pulse.html">NuRadioReco.utilities.analytic_pulse module</a></li>
 <li class="toctree-l5"><a class="reference internal" href="NuRadioReco.utilities.bandpass_filter.html">NuRadioReco.utilities.bandpass_filter module</a></li>
 <li class="toctree-l5"><a class="reference internal" href="NuRadioReco.utilities.cr_flux.html">NuRadioReco.utilities.cr_flux module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="NuRadioReco.utilities.dataservers.html">NuRadioReco.utilities.dataservers module</a></li>
 <li class="toctree-l5"><a class="reference internal" href="NuRadioReco.utilities.diodeSimulator.html">NuRadioReco.utilities.diodeSimulator module</a></li>
 <li class="toctree-l5"><a class="reference internal" href="NuRadioReco.utilities.fft.html">NuRadioReco.utilities.fft module</a></li>
 <li class="toctree-l5"><a class="reference internal" href="NuRadioReco.utilities.geometryUtilities.html">NuRadioReco.utilities.geometryUtilities module</a></li>
@@ -612,8 +617,9 @@
 <li class="toctree-l2"><a class="reference internal" href="NuRadioReco.modules.io.RNO_G.readRNOGDataMattak.html#NuRadioReco.modules.io.RNO_G.readRNOGDataMattak.get_time_offset"><code class="docutils literal notranslate"><span class="pre">get_time_offset()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="NuRadioReco.modules.io.RNO_G.readRNOGDataMattak.html#NuRadioReco.modules.io.RNO_G.readRNOGDataMattak.readRNOGData"><code class="docutils literal notranslate"><span class="pre">readRNOGData</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="NuRadioReco.modules.io.RNO_G.readRNOGDataMattak.html#NuRadioReco.modules.io.RNO_G.readRNOGDataMattak.readRNOGData.begin"><code class="docutils literal notranslate"><span class="pre">readRNOGData.begin()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="NuRadioReco.modules.io.RNO_G.readRNOGDataMattak.html#NuRadioReco.modules.io.RNO_G.readRNOGDataMattak.readRNOGData.set_selectors"><code class="docutils literal notranslate"><span class="pre">readRNOGData.set_selectors()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="NuRadioReco.modules.io.RNO_G.readRNOGDataMattak.html#NuRadioReco.modules.io.RNO_G.readRNOGDataMattak.readRNOGData.add_selectors"><code class="docutils literal notranslate"><span class="pre">readRNOGData.add_selectors()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="NuRadioReco.modules.io.RNO_G.readRNOGDataMattak.html#NuRadioReco.modules.io.RNO_G.readRNOGDataMattak.readRNOGData.get_events_information"><code class="docutils literal notranslate"><span class="pre">readRNOGData.get_events_information()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="NuRadioReco.modules.io.RNO_G.readRNOGDataMattak.html#NuRadioReco.modules.io.RNO_G.readRNOGDataMattak.readRNOGData.get_waveforms"><code class="docutils literal notranslate"><span class="pre">readRNOGData.get_waveforms()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="NuRadioReco.modules.io.RNO_G.readRNOGDataMattak.html#NuRadioReco.modules.io.RNO_G.readRNOGDataMattak.readRNOGData.run"><code class="docutils literal notranslate"><span class="pre">readRNOGData.run()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="NuRadioReco.modules.io.RNO_G.readRNOGDataMattak.html#NuRadioReco.modules.io.RNO_G.readRNOGDataMattak.readRNOGData.get_event_by_index"><code class="docutils literal notranslate"><span class="pre">readRNOGData.get_event_by_index()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="NuRadioReco.modules.io.RNO_G.readRNOGDataMattak.html#NuRadioReco.modules.io.RNO_G.readRNOGDataMattak.readRNOGData.get_event"><code class="docutils literal notranslate"><span class="pre">readRNOGData.get_event()</span></code></a></li>

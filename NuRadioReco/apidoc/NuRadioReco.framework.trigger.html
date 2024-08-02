@@ -78,6 +78,7 @@
 <li class="toctree-l4"><a class="reference internal" href="../../Introduction/pages/conventions.html#points">Points</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../Introduction/pages/conventions.html#angles">Angles</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../Introduction/pages/conventions.html#directions">Directions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../Introduction/pages/conventions.html#electic-fields">Electic Fields</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../Introduction/pages/conventions.html#units">Units</a></li>
@@ -162,8 +163,9 @@
 <li class="toctree-l4"><a class="reference internal" href="../pages/detector/detector_database_fields.html#adc-table">ADC Table</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="../pages/detector/antennamodels.html">Antenna Models</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="../pages/detector/antennamodels.html#overview-of-available-antenna-models">Overview of available Antenna Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pages/detector/antennamodels.html">Antenna Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pages/detector/antennamodels.html#implemetation-of-antenna-models">Implemetation of Antenna Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pages/detector/antennamodels.html#overview-of-available-antenna-models">Overview of available Antenna Models</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../pages/detector/antennamodels.html#bicone-v8-infair">bicone_v8_InfAir</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../pages/detector/antennamodels.html#bicone-v8-inffirn">bicone_v8_InfFirn</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../pages/detector/antennamodels.html#bicone-v8-inf-n1-32">bicone_v8_inf_n1.32</a></li>
@@ -227,7 +229,9 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../pages/detector/rnog.html">The RNO-G detector class and database interface</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../pages/detector/rnog.html#detector-time-and-database-time">Detector time and database time</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../pages/detector/rnog.html#database-data-structure">Database data structure</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../pages/detector/rnog.html#database-structure">Database structure</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../pages/detector/rnog.html#signal-chain">Signal Chain</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../pages/detector/rnog.html#response-class">Response class</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../pages/detector/rnog.html#detector-class">Detector class</a></li>
 </ul>
 </li>
@@ -356,6 +360,7 @@
 <li class="toctree-l5"><a class="reference internal" href="NuRadioReco.utilities.analytic_pulse.html">NuRadioReco.utilities.analytic_pulse module</a></li>
 <li class="toctree-l5"><a class="reference internal" href="NuRadioReco.utilities.bandpass_filter.html">NuRadioReco.utilities.bandpass_filter module</a></li>
 <li class="toctree-l5"><a class="reference internal" href="NuRadioReco.utilities.cr_flux.html">NuRadioReco.utilities.cr_flux module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="NuRadioReco.utilities.dataservers.html">NuRadioReco.utilities.dataservers module</a></li>
 <li class="toctree-l5"><a class="reference internal" href="NuRadioReco.utilities.diodeSimulator.html">NuRadioReco.utilities.diodeSimulator module</a></li>
 <li class="toctree-l5"><a class="reference internal" href="NuRadioReco.utilities.fft.html">NuRadioReco.utilities.fft module</a></li>
 <li class="toctree-l5"><a class="reference internal" href="NuRadioReco.utilities.geometryUtilities.html">NuRadioReco.utilities.geometryUtilities module</a></li>
@@ -814,7 +819,7 @@
 <span class="sig-name descname"><span class="pre">set_pre_trigger_times</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pre_trigger_times</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/NuRadioReco/framework/trigger.html#Trigger.set_pre_trigger_times"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NuRadioReco.framework.trigger.Trigger.set_pre_trigger_times" title="Permalink to this definition"></a></dt>
 <dd><p>Set the pre-trigger times</p>
 <p>This parameter should only be set if this trigger 
-determines the readout windows (e.g. by <a href="#id1"><span class="problematic" id="id2">:py:`NuRadioReco.modules.triggerTimeAdjuster`</span></a>)</p>
+determines the readout windows (e.g. by <a class="reference internal" href="NuRadioReco.modules.triggerTimeAdjuster.html#module-NuRadioReco.modules.triggerTimeAdjuster" title="NuRadioReco.modules.triggerTimeAdjuster"><code class="xref py py-class docutils literal notranslate"><span class="pre">NuRadioReco.modules.triggerTimeAdjuster</span></code></a>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
@@ -1012,7 +1017,7 @@ returns None</p>
 <span class="sig-name descname"><span class="pre">set_pre_trigger_times</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pre_trigger_times</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NuRadioReco.framework.trigger.SimpleThresholdTrigger.set_pre_trigger_times" title="Permalink to this definition"></a></dt>
 <dd><p>Set the pre-trigger times</p>
 <p>This parameter should only be set if this trigger 
-determines the readout windows (e.g. by <a href="#id3"><span class="problematic" id="id4">:py:`NuRadioReco.modules.triggerTimeAdjuster`</span></a>)</p>
+determines the readout windows (e.g. by <a class="reference internal" href="NuRadioReco.modules.triggerTimeAdjuster.html#module-NuRadioReco.modules.triggerTimeAdjuster" title="NuRadioReco.modules.triggerTimeAdjuster"><code class="xref py py-class docutils literal notranslate"><span class="pre">NuRadioReco.modules.triggerTimeAdjuster</span></code></a>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
@@ -1225,7 +1230,7 @@ returns None</p>
 <span class="sig-name descname"><span class="pre">set_pre_trigger_times</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pre_trigger_times</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NuRadioReco.framework.trigger.EnvelopePhasedTrigger.set_pre_trigger_times" title="Permalink to this definition"></a></dt>
 <dd><p>Set the pre-trigger times</p>
 <p>This parameter should only be set if this trigger 
-determines the readout windows (e.g. by <a href="#id5"><span class="problematic" id="id6">:py:`NuRadioReco.modules.triggerTimeAdjuster`</span></a>)</p>
+determines the readout windows (e.g. by <a class="reference internal" href="NuRadioReco.modules.triggerTimeAdjuster.html#module-NuRadioReco.modules.triggerTimeAdjuster" title="NuRadioReco.modules.triggerTimeAdjuster"><code class="xref py py-class docutils literal notranslate"><span class="pre">NuRadioReco.modules.triggerTimeAdjuster</span></code></a>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
@@ -1442,7 +1447,7 @@ returns None</p>
 <span class="sig-name descname"><span class="pre">set_pre_trigger_times</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pre_trigger_times</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NuRadioReco.framework.trigger.SimplePhasedTrigger.set_pre_trigger_times" title="Permalink to this definition"></a></dt>
 <dd><p>Set the pre-trigger times</p>
 <p>This parameter should only be set if this trigger 
-determines the readout windows (e.g. by <a href="#id7"><span class="problematic" id="id8">:py:`NuRadioReco.modules.triggerTimeAdjuster`</span></a>)</p>
+determines the readout windows (e.g. by <a class="reference internal" href="NuRadioReco.modules.triggerTimeAdjuster.html#module-NuRadioReco.modules.triggerTimeAdjuster" title="NuRadioReco.modules.triggerTimeAdjuster"><code class="xref py py-class docutils literal notranslate"><span class="pre">NuRadioReco.modules.triggerTimeAdjuster</span></code></a>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
@@ -1650,7 +1655,7 @@ returns None</p>
 <span class="sig-name descname"><span class="pre">set_pre_trigger_times</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pre_trigger_times</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NuRadioReco.framework.trigger.HighLowTrigger.set_pre_trigger_times" title="Permalink to this definition"></a></dt>
 <dd><p>Set the pre-trigger times</p>
 <p>This parameter should only be set if this trigger 
-determines the readout windows (e.g. by <a href="#id9"><span class="problematic" id="id10">:py:`NuRadioReco.modules.triggerTimeAdjuster`</span></a>)</p>
+determines the readout windows (e.g. by <a class="reference internal" href="NuRadioReco.modules.triggerTimeAdjuster.html#module-NuRadioReco.modules.triggerTimeAdjuster" title="NuRadioReco.modules.triggerTimeAdjuster"><code class="xref py py-class docutils literal notranslate"><span class="pre">NuRadioReco.modules.triggerTimeAdjuster</span></code></a>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
@@ -1854,7 +1859,7 @@ returns None</p>
 <span class="sig-name descname"><span class="pre">set_pre_trigger_times</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pre_trigger_times</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NuRadioReco.framework.trigger.IntegratedPowerTrigger.set_pre_trigger_times" title="Permalink to this definition"></a></dt>
 <dd><p>Set the pre-trigger times</p>
 <p>This parameter should only be set if this trigger 
-determines the readout windows (e.g. by <a href="#id11"><span class="problematic" id="id12">:py:`NuRadioReco.modules.triggerTimeAdjuster`</span></a>)</p>
+determines the readout windows (e.g. by <a class="reference internal" href="NuRadioReco.modules.triggerTimeAdjuster.html#module-NuRadioReco.modules.triggerTimeAdjuster" title="NuRadioReco.modules.triggerTimeAdjuster"><code class="xref py py-class docutils literal notranslate"><span class="pre">NuRadioReco.modules.triggerTimeAdjuster</span></code></a>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
@@ -2062,7 +2067,7 @@ returns None</p>
 <span class="sig-name descname"><span class="pre">set_pre_trigger_times</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pre_trigger_times</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NuRadioReco.framework.trigger.EnvelopeTrigger.set_pre_trigger_times" title="Permalink to this definition"></a></dt>
 <dd><p>Set the pre-trigger times</p>
 <p>This parameter should only be set if this trigger 
-determines the readout windows (e.g. by <a href="#id13"><span class="problematic" id="id14">:py:`NuRadioReco.modules.triggerTimeAdjuster`</span></a>)</p>
+determines the readout windows (e.g. by <a class="reference internal" href="NuRadioReco.modules.triggerTimeAdjuster.html#module-NuRadioReco.modules.triggerTimeAdjuster" title="NuRadioReco.modules.triggerTimeAdjuster"><code class="xref py py-class docutils literal notranslate"><span class="pre">NuRadioReco.modules.triggerTimeAdjuster</span></code></a>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
@@ -2275,7 +2280,7 @@ returns None</p>
 <span class="sig-name descname"><span class="pre">set_pre_trigger_times</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pre_trigger_times</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NuRadioReco.framework.trigger.RNOGSurfaceTrigger.set_pre_trigger_times" title="Permalink to this definition"></a></dt>
 <dd><p>Set the pre-trigger times</p>
 <p>This parameter should only be set if this trigger 
-determines the readout windows (e.g. by <a href="#id15"><span class="problematic" id="id16">:py:`NuRadioReco.modules.triggerTimeAdjuster`</span></a>)</p>
+determines the readout windows (e.g. by <a class="reference internal" href="NuRadioReco.modules.triggerTimeAdjuster.html#module-NuRadioReco.modules.triggerTimeAdjuster" title="NuRadioReco.modules.triggerTimeAdjuster"><code class="xref py py-class docutils literal notranslate"><span class="pre">NuRadioReco.modules.triggerTimeAdjuster</span></code></a>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
