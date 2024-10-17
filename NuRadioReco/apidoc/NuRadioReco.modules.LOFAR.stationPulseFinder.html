@@ -56,7 +56,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../Introduction/pages/introduction.html">Introduction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../Introduction/pages/installation.html">Installing NuRadioMC / NuRadioReco</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../Introduction/pages/installation.html#requirements">Requirements</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../Introduction/pages/installation.html#installation-using-pip">Installation using Pip</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../Introduction/pages/installation.html#installation-using-pip">Installation using <code class="docutils literal notranslate"><span class="pre">pip</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../Introduction/pages/installation.html#development-version">Development version</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../Introduction/pages/installation.html#pythonpath">PYTHONPATH</a></li>
 </ul>
@@ -639,7 +639,7 @@ select a window where the signal is and a separate window where there is only no
 <dl class="py class">
 <dt class="sig sig-object py" id="NuRadioReco.modules.LOFAR.stationPulseFinder.stationPulseFinder">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">NuRadioReco.modules.LOFAR.stationPulseFinder.</span></span><span class="sig-name descname"><span class="pre">stationPulseFinder</span></span><a class="reference internal" href="../../_modules/NuRadioReco/modules/LOFAR/stationPulseFinder.html#stationPulseFinder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NuRadioReco.modules.LOFAR.stationPulseFinder.stationPulseFinder" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Look for significant pulses in every station. The module uses beamforming to enhance the sensitivity in
 direction estimated from the LORA particle data. It also identifies the channels which have an SNR good
 enough to use for direction fitting later.</p>
@@ -663,7 +663,7 @@ enough to use for direction fitting later.</p>
 </table>
 <dl class="py method">
 <dt class="sig sig-object py" id="NuRadioReco.modules.LOFAR.stationPulseFinder.stationPulseFinder.begin">
-<span class="sig-name descname"><span class="pre">begin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise_window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cr_snr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">good_channels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/NuRadioReco/modules/LOFAR/stationPulseFinder.html#stationPulseFinder.begin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NuRadioReco.modules.LOFAR.stationPulseFinder.stationPulseFinder.begin" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">begin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise_window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cr_snr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">good_channels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/NuRadioReco/modules/LOFAR/stationPulseFinder.html#stationPulseFinder.begin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NuRadioReco.modules.LOFAR.stationPulseFinder.stationPulseFinder.begin" title="Permalink to this definition"></a></dt>
 <dd><p>Sets the window size to use for pulse finding, as well as the number of samples away from the pulse
 to use for noise measurements. The function also defines what an acceptable SNR is to consider a
 cosmic-ray signal to be in the trace, as well as the number of good channels a station should have
@@ -680,7 +680,7 @@ window minus this number.</p>
 </dd>
 <dt><strong>good_channels</strong><span class="classifier">int, default=6</span></dt><dd><p>The minimum number of good channels a station should have in order be “triggered”.</p>
 </dd>
-<dt><strong>logger_level</strong><span class="classifier">int, default=logging.WARNING</span></dt><dd><p>The logging level to use for the module.</p>
+<dt><strong>logger_level</strong><span class="classifier">int, default=logging.NOTSET</span></dt><dd><p>Use this parameter to override the logging level for this module.</p>
 </dd>
 </dl>
 </dd>
