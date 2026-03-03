@@ -10,7 +10,7 @@ Subpackages
 -----------
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 1
 
    NuRadioReco.modules.ARA
    NuRadioReco.modules.ARIANNA
@@ -30,25 +30,29 @@ Submodules
 ----------
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 1
 
    NuRadioReco.modules.analogToDigitalConverter
    NuRadioReco.modules.beamFormingDirectionFitter
    NuRadioReco.modules.channelAddCableDelay
    NuRadioReco.modules.channelAntennaDedispersion
    NuRadioReco.modules.channelBandPassFilter
+   NuRadioReco.modules.channelCWNotchFilter
    NuRadioReco.modules.channelGalacticNoiseAdder
    NuRadioReco.modules.channelGenericNoiseAdder
+   NuRadioReco.modules.channelIceThermalNoiseAdder
    NuRadioReco.modules.channelLengthAdjuster
+   NuRadioReco.modules.channelReadoutWindowCutter
    NuRadioReco.modules.channelResampler
    NuRadioReco.modules.channelSignalReconstructor
+   NuRadioReco.modules.channelSinewaveSubtraction
    NuRadioReco.modules.channelStopFilter
    NuRadioReco.modules.channelTemplateCorrelation
    NuRadioReco.modules.channelTimeOffsetCalculator
    NuRadioReco.modules.channelTimeWindow
    NuRadioReco.modules.correlationDirectionFitter
    NuRadioReco.modules.cosmicRayEnergyReconstructor
-   NuRadioReco.modules.efieldAirToIcePropagator
+   NuRadioReco.modules.efieldGalacticNoiseAdder
    NuRadioReco.modules.efieldRadioInterferometricReconstruction
    NuRadioReco.modules.efieldTimeDirectionFitter
    NuRadioReco.modules.efieldToVoltageConverter
@@ -59,7 +63,7 @@ Submodules
    NuRadioReco.modules.eventTypeIdentifier
    NuRadioReco.modules.sphericalWaveFitter
    NuRadioReco.modules.templateDirectionFitter
-   NuRadioReco.modules.triggerTimeAdjuster
    NuRadioReco.modules.voltageToAnalyticEfieldConverter
    NuRadioReco.modules.voltageToEfieldConverter
    NuRadioReco.modules.voltageToEfieldConverterPerChannel
+   NuRadioReco.modules.voltageToEfieldConverterPerChannelGroup

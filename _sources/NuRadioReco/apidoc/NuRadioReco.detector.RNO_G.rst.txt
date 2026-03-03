@@ -10,9 +10,10 @@ Submodules
 ----------
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 1
 
    NuRadioReco.detector.RNO_G.analog_components
    NuRadioReco.detector.RNO_G.db_mongo_read
    NuRadioReco.detector.RNO_G.db_mongo_write
    NuRadioReco.detector.RNO_G.rnog_detector
+   NuRadioReco.detector.RNO_G.rnog_detector_mod
